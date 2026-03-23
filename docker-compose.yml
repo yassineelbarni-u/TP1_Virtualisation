@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    #machine des ports pour acceder au client depuis le navigateur
     ports:
       - "5174:5173"
     container_name: music-app-client
@@ -13,28 +14,30 @@ services:
 
   server:
     build:
-      context: ./server 
-      dockerfile: Dockerfile 
+      context: ./server
+      dockerfile: Dockerfile
     ports:
       - "5001:5001"
     container_name: music-app-server
+    #connection a la base de données MongoDB via host
     environment:
       - MONGO_URI=mongodb://mongodb:27017/musicapp
     depends_on:
-      - mongodb 
+      - mongodb
 
   # Service pour la base de données MongoDB
   mongodb:
-    image: mongo:latest 
+    image: mongo:latest
     ports:
       - "27017:27017" 
     container_name: music-app-db
     volumes:
-      - mongo-data:/data/db 
+      - mongo-data:/data/db
 
 volumes:
   mongo-data:
 
+# Utilisation du réseau par défaut pour permettre la communication entre les services
 networks:
   default:
     driver: bridge

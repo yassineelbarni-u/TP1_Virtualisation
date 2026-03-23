@@ -1,12 +1,7 @@
-// Import necessary packages
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import Track from './models/Track.js';
-
-// Load environment variables
-dotenv.config();
 
 // Initialize Express app
 const app = express();
@@ -29,15 +24,17 @@ mongoose.connect(MONGO_URI)
  */
 app.get('/api/tracks', async (req, res) => {
   try {
-    // 1. Fetch data from the external Deezer API
+    // recupere les données de l'api deezer
     const deezerResponse = await fetch(`https://api.deezer.com/chart/0/tracks`);
     if (!deezerResponse.ok) {
       throw new Error('Failed to fetch from Deezer API');
     }
+    // convertit la réponse en JSON
     const { data: tracksFromApi } = await deezerResponse.json();
 
-    // 2. Store or update tracks in MongoDB
+    // Store or update tracks in MongoDB
     const trackPromises = tracksFromApi.map(trackData => {
+      // parcours chaque track et prepare les donnees pour la BD
       const track = {
         id: trackData.id,
         title: trackData.title,
@@ -50,24 +47,25 @@ app.get('/api/tracks', async (req, res) => {
           cover_medium: trackData.album.cover_medium,
         },
       };
-
-      // Use updateOne with 'upsert: true' to either update an existing track or insert a new one.
+     
+      // if existe deja, update sinon insert
       return Track.updateOne({ id: track.id }, track, { upsert: true });
     });
-
+    
+    // execute toutes les operations insert/update en parallele
     await Promise.all(trackPromises);
     console.log('Tracks have been successfully saved/updated in the database.');
 
-    // 3. Send the fresh tracks list to the client
+    // reponse au client avec les tracks de l'api
     res.json(tracksFromApi);
 
   } catch (error) {
     console.error('Error in /api/tracks:', error);
-    // If something goes wrong, try to send tracks from the database as a fallback
     try {
-      const tracksFromDb = await Track.find().sort({ rank: 'asc' }).limit(10);
-      if (tracksFromDb.length > 0) {
-        res.json(tracksFromDb);
+      //recuperer tous les tracks de la BD, les trier par rank et limiter a 10
+      const trackFromDb = await Track.find().sort({ rank: 'asc' }).limit(10);
+      if (trackFromDb.length > 0) {
+        res.json(trackFromDb);
       } else {
         res.status(500).json({ message: 'Server error and no tracks in DB' });
       }

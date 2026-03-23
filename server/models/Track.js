@@ -16,7 +16,7 @@ const TrackSchema = new Schema({
   },
 });
 
-// Create the model from the schema
+// creation de shema a partir de la structure de données que nous avons reçu de l'api deezer
 const Track = mongoose.model('Track', TrackSchema);
 
 export default Track;
