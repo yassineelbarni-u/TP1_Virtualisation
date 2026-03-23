@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Track } from "../types/track";
 
-type ChartResponse = {
-  data?: Track[];
-};
-
 export function useTopTracks(limit = 10) {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [error, setError] = useState("");

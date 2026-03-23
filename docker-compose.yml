@@ -19,17 +19,17 @@ services:
     ports:
       - "5001:5001"
     container_name: music-app-server
-    #connection a la base de données MongoDB via host
+    #connection a la base de donnees MongoDB via host
     environment:
       - MONGO_URI=mongodb://mongodb:27017/musicapp
     depends_on:
       - mongodb
 
-  # Service pour la base de données MongoDB
+  # Service pour la base de donnees MongoDB
   mongodb:
     image: mongo:latest
     ports:
-      - "27017:27017" 
+      - "27017:27017"
     container_name: music-app-db
     volumes:
       - mongo-data:/data/db
